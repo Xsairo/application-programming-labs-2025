@@ -62,25 +62,6 @@ class AudioProcessor:
 
         return info
 
-    def increase_speed_by_resampling(self, speed_factor: float = 2.0) -> np.ndarray:
-        """
-        Увеличивает скорость аудиофайла в заданное количество раз путем изменения частоты дискретизации.
-        """
-        if self.audio_data is None:
-            raise ValueError("Аудиофайл не загружен")
-
-        if speed_factor <= 0:
-            raise ValueError("Коэффициент скорости должен быть положительным числом")
-
-        print(f"Увеличение скорости аудио в {speed_factor} раз...")
-
-        self.processed_samplerate = int(self.original_samplerate * speed_factor)
-
-        print(f"Исходная частота дискретизации: {self.original_samplerate} Гц")
-        print(f"Новая частота дискретизации: {self.processed_samplerate} Гц")
-
-        return self.audio_data
-
     def visualize_audio(self, speed_factor: float):
         """
         Визуализирует исходное и обработанное аудио с помощью matplotlib.
@@ -126,7 +107,7 @@ class AudioProcessor:
         plt.show()
         plt.close()
 
-    def save_audio(self, filepath: str, speed_factor: float):
+    def save_and_speedup_audio(self, filepath: str, speed_factor: float):
         """
         Сохраняет обработанное аудио в файл.
         Для ускорения аудио используется изменение частоты дискретизации.
@@ -163,17 +144,9 @@ def process_audio_file(input_path: str, output_path: str, speed_factor: float = 
         print(f"Диапазон амплитуд: от {info['min_amplitude']:.3f} до {info['max_amplitude']:.3f}")
 
         print("ОБРАБОТКА АУДИО...")
-        processor.increase_speed_by_resampling(speed_factor)
 
         processed_duration = info['duration'] / speed_factor
         new_samplerate = info['samplerate'] * speed_factor
-
-        print(f"Новая частота дискретизации: {new_samplerate} Гц")
-        print(f"Длительность после обработки: {processed_duration:.2f} секунд")
-        print(f"Коэффициент сжатия времени: {speed_factor:.2f}")
-
-        print("ВИЗУАЛИЗАЦИЯ...")
-        processor.visualize_audio(speed_factor)
 
         print("СОХРАНЕНИЕ РЕЗУЛЬТАТА...")
 
@@ -181,7 +154,13 @@ def process_audio_file(input_path: str, output_path: str, speed_factor: float = 
         if output_dir and not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-        processor.save_audio(output_path, speed_factor)
+        processor.save_and_speedup_audio(output_path, speed_factor)
+        print(f"Новая частота дискретизации: {new_samplerate} Гц")
+        print(f"Длительность после обработки: {processed_duration:.2f} секунд")
+        print(f"Коэффициент сжатия времени: {speed_factor:.2f}")
+
+        print("ВИЗУАЛИЗАЦИЯ...")
+        processor.visualize_audio(speed_factor)
 
         print("ОБРАБОТКА УСПЕШНО ЗАВЕРШЕНА!")
 
